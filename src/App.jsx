@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000');  // Change 'localhost' to your backend server URL if deployed
+// Connect to the backend server (make sure to use the correct URL)
+const socket = io('http://localhost:5000'); // Replace 'localhost' with your backend server URL if deployed
 
 const App = () => {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
 
   useEffect(() => {
-    // Listen for incoming messages from the backend
+    // Listen for new messages from the server
     socket.on('receiveMessage', (message) => {
       setChat((prevChat) => [...prevChat, message]);
     });
 
-    // Cleanup the listener when component unmounts
+    // Clean up event listener on component unmount
     return () => {
       socket.off('receiveMessage');
     };
@@ -21,9 +22,9 @@ const App = () => {
 
   const sendMessage = () => {
     if (message.trim()) {
-      // Send the message to the backend
+      // Emit the message to the backend server
       socket.emit('sendMessage', message);
-      setMessage(''); // Clear the input field
+      setMessage(''); // Clear the input field after sending the message
     }
   };
 
@@ -36,9 +37,7 @@ const App = () => {
         <div className="p-4 flex-grow overflow-y-auto h-64">
           {chat.map((msg, index) => (
             <div key={index} className="mb-2">
-              <div className="bg-gray-200 p-2 rounded-lg shadow">
-                {msg}
-              </div>
+              <div className="bg-gray-200 p-2 rounded-lg shadow">{msg}</div>
             </div>
           ))}
         </div>
