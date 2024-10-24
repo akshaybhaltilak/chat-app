@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 // Connect to the backend server (replace with your deployed backend URL)
-const socket = io('http://localhost:5000'); // Replace 'localhost' with your backend server URL if deployed
+const socket = io('https://sanchat.vercel.app/'); // Replace 'localhost' with your backend server URL if deployed
 
 const App = () => {
   const [message, setMessage] = useState('');
