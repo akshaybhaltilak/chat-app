@@ -4,35 +4,30 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+app.use(cors()); // Allow CORS for your frontend
 
 const server = http.createServer(app);
-
-// Create Socket.IO server
 const io = new Server(server, {
   cors: {
-    origin: '*', // Allow all origins (change this later if needed)
+    origin: 'http://localhost:5173', // Update this with your frontend URL
+    methods: ['GET', 'POST'],
   },
 });
 
-// Event for a new connection
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('User connected:', socket.id);
 
-  // Event for receiving messages
-  socket.on('sendMessage', (message) => {
-    // Broadcast the message to all connected clients
-    io.emit('receiveMessage', message);
+  // Listen for send_message from the client
+  socket.on('send_message', (data) => {
+    console.log('Message received:', data); // Log the received message
+    io.emit('receive_message', data); // Broadcast to all connected clients
   });
 
-  // Handle user disconnection
   socket.on('disconnect', () => {
-    console.log('A user disconnected:', socket.id);
+    console.log('User disconnected:', socket.id);
   });
 });
 
-// Run server on port 5000
-const PORT = 5000;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(5000, () => {
+  console.log('Server is running on port 5000');
 });

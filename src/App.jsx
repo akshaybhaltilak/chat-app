@@ -1,78 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-// Connect to the backend server (replace with your deployed backend URL)
-const socket = io('https://sanchat.vercel.app/'); // Replace 'localhost' with your backend server URL if deployed
+// Connect to the backend Socket.io server
+const socket = io('http://localhost:5000'); // Ensure this URL matches your backend URL
 
-const App = () => {
+function App() {
   const [message, setMessage] = useState('');
-  const [chat, setChat] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [isSending, setIsSending] = useState(false); // Track sending state
 
+  // Listen for messages from the server
   useEffect(() => {
-    // Listen for new messages from the server
-    socket.on('receiveMessage', (messageData) => {
-      setChat((prevChat) => [...prevChat, messageData]);
+    socket.on('receive_message', (data) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
     });
 
-    // Clean up event listener on component unmount
+    // Clean up when the component unmounts
     return () => {
-      socket.off('receiveMessage');
+      socket.off('receive_message');
     };
   }, []);
 
-  const sendMessage = () => {
-    if (message.trim()) {
-      // Emit the message to the backend with a "sender" identifier
-      const messageData = { message, sender: 'me' };
-      socket.emit('sendMessage', messageData);
-      setMessage(''); // Clear the input field after sending the message
+  // Send a message
+  const sendMessage = async () => {
+    if (message.trim() && !isSending) {
+      const msg = {
+        text: message,
+        sender: 'You',
+        timestamp: new Date().toLocaleTimeString(),
+      };
+
+      setIsSending(true); // Set sending state to true
+
+      // Emit the message to the server
+      await socket.emit('send_message', msg);
+      
+      // Display the message immediately in your chat
+      setMessages((prevMessages) => [...prevMessages, msg]);
+
+      setMessage(''); // Clear the input field
+      setIsSending(false); // Reset sending state
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md border rounded-lg shadow-lg bg-white flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold text-center">Anonymous Chat</h2>
-        </div>
-        <div className="p-4 flex-grow overflow-y-auto h-64 space-y-2">
-          {chat.map((msg, index) => (
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-purple-400 to-pink-500">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-4 flex flex-col h-[80vh]">
+        <header className="text-center font-bold text-2xl text-purple-700 mb-4">For My World ❤️</header>
+        
+        <div className="flex-1 overflow-y-auto space-y-3 p-2">
+          {messages.map((msg, idx) => (
             <div
-              key={index}
-              className={`flex ${
-                msg.sender === 'me' ? 'justify-end' : 'justify-start'
+              key={idx}
+              className={`rounded-lg p-3 max-w-[75%] ${
+                msg.sender === 'You' ? 'bg-green-300 ml-auto' : 'bg-white mr-auto' // Green for sent, white for received
               }`}
             >
-              <div
-                className={`p-2 rounded-lg shadow max-w-xs ${
-                  msg.sender === 'me'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-black'
-                }`}
-              >
-                {msg.message}
-              </div>
+              <p>{msg.text}</p>
+              <small className="text-xs text-gray-600">{msg.timestamp}</small>
             </div>
           ))}
         </div>
-        <div className="p-4 border-t flex items-center space-x-2">
+        
+        <div className="mt-2 flex space-x-2">
           <input
-            className="flex-grow p-2 border rounded-lg"
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message..."
+            className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:border-purple-500"
           />
           <button
             onClick={sendMessage}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            disabled={isSending} // Disable button while sending
+            className={`bg-purple-500 text-white rounded-lg px-4 py-2 hover:bg-purple-600 transition ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Send
+            {isSending ? 'Sending...' : 'Send'} {/* Change button text while sending */}
           </button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default App;
