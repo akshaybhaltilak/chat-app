@@ -1,0 +1,13 @@
+{
+    "name": "my-project",
+    "version": "1.0.0",
+    "scripts": {
+      "start": "node api/index.js" 
+    },
+    "dependencies": {
+      "express": "^4.x.x",
+      "socket.io": "^4.x.x",
+      "cors": "^2.x.x"
+    }
+  }
+  

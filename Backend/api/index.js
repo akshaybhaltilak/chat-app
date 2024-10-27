@@ -9,9 +9,14 @@ app.use(cors()); // Allow CORS for your frontend
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://sanchat.vercel.app/', // Update this with your frontend URL
+    origin: 'http://localhost:5173', // Remove the trailing slash
     methods: ['GET', 'POST'],
   },
+});
+
+// Basic endpoint to test the server
+app.get('/', (req, res) => {
+  res.send('Socket.IO server is running!');
 });
 
 io.on('connection', (socket) => {
@@ -28,6 +33,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(5000, () => {
-  console.log('Server is running on port 5000');
+// Run the server on port 5000
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
